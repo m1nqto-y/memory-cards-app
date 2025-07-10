@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/Header';
 import { cn } from '@/lib/utils';
 import { Noto_Sans_JP } from 'next/font/google';
+import { AuthProvider } from '@/context/AuthContext';
 
 const notoSansJp = Noto_Sans_JP({
   subsets: ['latin'],
@@ -24,11 +25,13 @@ export default function RootLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <body className={cn('font-body antialiased min-h-screen bg-background flex flex-col', notoSansJp.variable)}>
-        <Header />
-        <main className="flex-grow container mx-auto px-4 py-8">
-          {children}
-        </main>
-        <Toaster />
+        <AuthProvider>
+          <Header />
+          <main className="flex-grow container mx-auto px-4 py-8">
+            {children}
+          </main>
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

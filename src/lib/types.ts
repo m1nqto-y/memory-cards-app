@@ -1,3 +1,5 @@
+import type { Timestamp } from "firebase/firestore";
+
 export interface Flashcard {
   id: string;
   term: string;
@@ -5,7 +7,9 @@ export interface Flashcard {
 }
 
 export interface Deck {
-  id:string;
+  id: string;
   name: string;
   cards: Flashcard[];
+  userId: string;
+  createdAt: Timestamp;
 }

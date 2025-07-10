@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { BrainCircuit } from 'lucide-react';
+import { ProfileButton } from './ProfileButton';
 
 export function Header() {
   return (
@@ -11,7 +12,7 @@ export function Header() {
             MemoryMaster
           </Link>
           <div className="flex items-center space-x-4">
-            {/* Future navigation items can go here */}
+            <ProfileButton />
           </div>
         </div>
       </div>

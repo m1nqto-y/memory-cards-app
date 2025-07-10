@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useLocalStorage } from '@/hooks/use-local-storage';
 import type { Deck } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,16 +23,17 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2, BookOpen, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, BookOpen, ChevronRight, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useDecks } from '@/hooks/useDecks';
 
 export default function Home() {
-  const [decks, setDecks] = useLocalStorage<Deck[]>('flashcard-decks', []);
+  const { decks, loading, addDeck, deleteDeck } = useDecks();
   const [newDeckName, setNewDeckName] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleCreateDeck = () => {
+  const handleCreateDeck = async () => {
     if (newDeckName.trim() === '') {
       toast({
         title: 'エラー',
@@ -42,29 +42,39 @@ export default function Home() {
       });
       return;
     }
-    const newDeck: Deck = {
-      id: crypto.randomUUID(),
-      name: newDeckName,
-      cards: [],
-    };
-    setDecks([...decks, newDeck]);
-    setNewDeckName('');
-    setIsDialogOpen(false);
-    toast({
-      title: '成功しました！',
-      description: `デッキ「${newDeckName}」が作成されました。`,
-    });
+    try {
+      await addDeck({ name: newDeckName });
+      toast({
+        title: '成功しました！',
+        description: `デッキ「${newDeckName}」が作成されました。`,
+      });
+      setNewDeckName('');
+      setIsDialogOpen(false);
+    } catch (error) {
+       toast({
+        title: 'エラー',
+        description: 'デッキの作成に失敗しました。',
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleDeleteDeck = (deckId: string) => {
+  const handleDeleteDeck = async (deckId: string) => {
     if (window.confirm('このデッキとすべてのカードを本当に削除しますか？')) {
-      const updatedDecks = decks.filter((deck) => deck.id !== deckId);
-      setDecks(updatedDecks);
-      toast({
-        title: 'デッキを削除しました',
-        description: 'デッキが削除されました。',
-        variant: 'destructive'
-      });
+      try {
+        await deleteDeck(deckId);
+        toast({
+          title: 'デッキを削除しました',
+          description: 'デッキが削除されました。',
+          variant: 'destructive'
+        });
+      } catch (error) {
+        toast({
+          title: 'エラー',
+          description: 'デッキの削除に失敗しました。',
+          variant: 'destructive'
+        });
+      }
     }
   };
 
@@ -107,7 +117,11 @@ export default function Home() {
         </Dialog>
       </div>
 
-      {decks.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : decks.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent>
             <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -123,7 +137,7 @@ export default function Home() {
             <Card key={deck.id} className="flex flex-col hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="font-headline">{deck.name}</CardTitle>
-                <CardDescription>{deck.cards.length} 枚のカード</CardDescription>
+                <CardDescription>{deck.cards?.length || 0} 枚のカード</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow"></CardContent>
               <CardFooter className="flex justify-between">

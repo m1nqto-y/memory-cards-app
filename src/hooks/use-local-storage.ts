@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 
 type SetValue<T> = (value: T | ((val: T) => T)) => void;
 
+// This hook is no longer used for core functionality but is kept for potential future use
+// or for features that might not require cloud sync.
 export function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once

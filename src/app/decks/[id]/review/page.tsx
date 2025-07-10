@@ -2,44 +2,42 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useLocalStorage } from '@/hooks/use-local-storage';
 import type { Deck, Flashcard as FlashcardType } from '@/lib/types';
 import { Flashcard } from '@/components/Flashcard';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight, RotateCw, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, RotateCw, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useDecks } from '@/hooks/useDecks';
 
 export default function ReviewPage() {
   const params = useParams();
-  const router = useRouter();
   const { id } = params;
-  const [decks] = useLocalStorage<Deck[]>('flashcard-decks', []);
+  const { decks, loading } = useDecks();
 
-  const deck = useMemo(() => decks.find((d) => d.id === id), [decks, id]);
+  const deck = useMemo(() => decks.find((d: Deck) => d.id === id), [decks, id]);
 
   const [shuffledCards, setShuffledCards] = useState<FlashcardType[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const shuffleCards = () => {
-    if (deck) {
-      const shuffled = [...deck.cards].sort(() => Math.random() - 0.5);
+  const shuffleCards = (cards: FlashcardType[]) => {
+      const shuffled = [...cards].sort(() => Math.random() - 0.5);
       setShuffledCards(shuffled);
       setCurrentIndex(0);
-    }
   };
-
+  
   useEffect(() => {
-    shuffleCards();
+    if (deck && deck.cards) {
+      shuffleCards(deck.cards);
+    }
   }, [deck]);
 
-  if (!isMounted) {
-    return null; // or a loading spinner
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
   
   if (!deck) {
@@ -55,7 +53,7 @@ export default function ReviewPage() {
     );
   }
   
-  if (shuffledCards.length === 0) {
+  if (!deck.cards || shuffledCards.length === 0) {
     return (
       <div className="text-center">
         <h1 className="text-2xl font-bold">このデッキは空です</h1>
@@ -92,7 +90,7 @@ export default function ReviewPage() {
             </Link>
             <div className="flex justify-between items-center">
                 <p className="text-sm font-medium tabular-nums">{currentIndex + 1} / {shuffledCards.length}</p>
-                 <Button variant="ghost" size="sm" onClick={shuffleCards}>
+                 <Button variant="ghost" size="sm" onClick={() => shuffleCards(deck.cards || [])}>
                     <RotateCw className="mr-2 h-4 w-4" /> 再シャッフル
                 </Button>
             </div>
