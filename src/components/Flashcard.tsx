@@ -24,7 +24,7 @@ export function Flashcard({ card }: FlashcardProps) {
       role="button"
       tabIndex={0}
       onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && setIsFlipped(!isFlipped)}
-      aria-label={`Flashcard. Front: ${card.term}. Click or press space to flip.`}
+      aria-label={`単語カード。表：${card.term}。クリックまたはスペースキーで裏返します。`}
     >
       <div
         className={cn(

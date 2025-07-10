@@ -45,10 +45,10 @@ export default function ReviewPage() {
   if (!deck) {
     return (
       <div className="text-center">
-        <h1 className="text-2xl font-bold">Deck not found</h1>
+        <h1 className="text-2xl font-bold">デッキが見つかりません</h1>
         <Button asChild variant="link" className="mt-4">
             <Link href="/">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to decks
+                <ArrowLeft className="mr-2 h-4 w-4" /> デッキ一覧に戻る
             </Link>
         </Button>
       </div>
@@ -58,11 +58,11 @@ export default function ReviewPage() {
   if (shuffledCards.length === 0) {
     return (
       <div className="text-center">
-        <h1 className="text-2xl font-bold">This deck is empty</h1>
-        <p className="text-muted-foreground">Add some cards to start a review session.</p>
+        <h1 className="text-2xl font-bold">このデッキは空です</h1>
+        <p className="text-muted-foreground">復習セッションを開始するには、カードを追加してください。</p>
         <Button asChild variant="link" className="mt-4">
             <Link href={`/decks/${id}`}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to deck
+                <ArrowLeft className="mr-2 h-4 w-4" /> デッキに戻る
             </Link>
         </Button>
       </div>
@@ -88,12 +88,12 @@ export default function ReviewPage() {
     <div className="flex flex-col items-center gap-8 h-full">
         <div className="w-full max-w-2xl space-y-2">
             <Link href={`/decks/${id}`} className="text-sm text-muted-foreground hover:text-primary flex items-center">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to {deck.name}
+                <ArrowLeft className="mr-2 h-4 w-4" /> {deck.name} に戻る
             </Link>
             <div className="flex justify-between items-center">
                 <p className="text-sm font-medium tabular-nums">{currentIndex + 1} / {shuffledCards.length}</p>
                  <Button variant="ghost" size="sm" onClick={shuffleCards}>
-                    <RotateCw className="mr-2 h-4 w-4" /> Reshuffle
+                    <RotateCw className="mr-2 h-4 w-4" /> 再シャッフル
                 </Button>
             </div>
             <Progress value={progress} />
@@ -108,7 +108,7 @@ export default function ReviewPage() {
                 <ArrowLeft className="h-5 w-5" />
             </Button>
             <Button size="lg" onClick={goToNext} disabled={currentIndex >= shuffledCards.length - 1} className="flex-grow bg-accent hover:bg-accent/90 text-accent-foreground">
-                Next Card <ArrowRight className="ml-2 h-5 w-5" />
+                次のカード <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
         </div>
     </div>

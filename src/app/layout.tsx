@@ -3,6 +3,13 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/Header';
 import { cn } from '@/lib/utils';
+import { Noto_Sans_JP } from 'next/font/google';
+
+const notoSansJp = Noto_Sans_JP({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-body',
+});
 
 export const metadata: Metadata = {
   title: 'MemoryMaster Flashcards',
@@ -15,16 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className={cn('font-body antialiased min-h-screen bg-background flex flex-col')}>
+    <html lang="ja" suppressHydrationWarning>
+      <body className={cn('font-body antialiased min-h-screen bg-background flex flex-col', notoSansJp.variable)}>
         <Header />
         <main className="flex-grow container mx-auto px-4 py-8">
           {children}

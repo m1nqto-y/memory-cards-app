@@ -36,8 +36,8 @@ export default function Home() {
   const handleCreateDeck = () => {
     if (newDeckName.trim() === '') {
       toast({
-        title: 'Error',
-        description: 'Deck name cannot be empty.',
+        title: 'エラー',
+        description: 'デッキ名を入力してください。',
         variant: 'destructive',
       });
       return;
@@ -51,18 +51,18 @@ export default function Home() {
     setNewDeckName('');
     setIsDialogOpen(false);
     toast({
-      title: 'Success!',
-      description: `Deck "${newDeckName}" has been created.`,
+      title: '成功しました！',
+      description: `デッキ「${newDeckName}」が作成されました。`,
     });
   };
 
   const handleDeleteDeck = (deckId: string) => {
-    if (window.confirm('Are you sure you want to delete this deck and all its cards?')) {
+    if (window.confirm('このデッキとすべてのカードを本当に削除しますか？')) {
       const updatedDecks = decks.filter((deck) => deck.id !== deckId);
       setDecks(updatedDecks);
       toast({
-        title: 'Deck Deleted',
-        description: 'The deck has been removed.',
+        title: 'デッキを削除しました',
+        description: 'デッキが削除されました。',
         variant: 'destructive'
       });
     }
@@ -71,37 +71,37 @@ export default function Home() {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-headline">My Decks</h1>
+        <h1 className="text-3xl font-bold font-headline">マイデッキ</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> Create New Deck
+              <Plus className="mr-2 h-4 w-4" /> 新しいデッキを作成
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Create New Deck</DialogTitle>
+              <DialogTitle>新しいデッキを作成</DialogTitle>
               <DialogDescription>
-                Give your new deck a name to start adding flashcards.
+                新しいデッキに名前を付けて、単語カードの追加を始めましょう。
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="deck-name" className="text-right">
-                  Name
+                  名前
                 </Label>
                 <Input
                   id="deck-name"
                   value={newDeckName}
                   onChange={(e) => setNewDeckName(e.target.value)}
                   className="col-span-3"
-                  placeholder="e.g., Japanese Vocabulary"
+                  placeholder="例：日本語の語彙"
                   onKeyDown={(e) => e.key === 'Enter' && handleCreateDeck()}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" onClick={handleCreateDeck}>Create Deck</Button>
+              <Button type="submit" onClick={handleCreateDeck}>デッキを作成</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -111,9 +111,9 @@ export default function Home() {
         <Card className="text-center py-12">
           <CardContent>
             <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h2 className="mt-4 text-xl font-semibold">No Decks Yet</h2>
+            <h2 className="mt-4 text-xl font-semibold">まだデッキがありません</h2>
             <p className="mt-2 text-muted-foreground">
-              Create your first deck to start learning!
+              最初のデッキを作成して学習を始めましょう！
             </p>
           </CardContent>
         </Card>
@@ -123,18 +123,18 @@ export default function Home() {
             <Card key={deck.id} className="flex flex-col hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="font-headline">{deck.name}</CardTitle>
-                <CardDescription>{deck.cards.length} card{deck.cards.length !== 1 && 's'}</CardDescription>
+                <CardDescription>{deck.cards.length} 枚のカード</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow"></CardContent>
               <CardFooter className="flex justify-between">
                 <Button variant="ghost" size="icon" onClick={() => handleDeleteDeck(deck.id)}>
                   <Trash2 className="h-4 w-4" />
-                  <span className="sr-only">Delete Deck</span>
+                  <span className="sr-only">デッキを削除</span>
                 </Button>
                 <Link href={`/decks/${deck.id}`} passHref>
                   <Button asChild variant="outline">
                     <a>
-                      View Deck <ChevronRight className="ml-2 h-4 w-4" />
+                      デッキを見る <ChevronRight className="ml-2 h-4 w-4" />
                     </a>
                   </Button>
                 </Link>
