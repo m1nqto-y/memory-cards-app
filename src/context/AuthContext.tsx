@@ -5,7 +5,6 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithRedirect,
-  getRedirectResult,
   signOut,
   User,
 } from "firebase/auth";
@@ -25,47 +24,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const processRedirectResult = async () => {
-        try {
-            const result = await getRedirectResult(auth);
-            if (result) {
-                // User is available in result.user
-                // onAuthStateChanged will handle setting the user state.
-            }
-        } catch (error) {
-            console.error("Error getting redirect result: ", error);
-        } finally {
-            // After processing the redirect, set up the auth state listener.
-            // This ensures we don't have race conditions between getRedirectResult and onAuthStateChanged.
-            const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-                setUser(currentUser);
-                setLoading(false);
-            });
-            return unsubscribe;
-        }
-    };
+    // onAuthStateChanged は認証状態の変更（ログイン、ログアウト）を監視するリスナー
+    // このリスナーは、マウント時に現在のユーザー状態を一度返し、その後変更があるたびに再度返します。
+    // このアプローチにより、リダイレクト後もユーザー情報を確実に取得できます。
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
 
-    const unsubscribePromise = processRedirectResult();
-
-    // Make sure to unsubscribe when the component unmounts.
-    return () => {
-      unsubscribePromise.then(unsubscribe => {
-        if (unsubscribe) {
-          unsubscribe();
-        }
-      });
-    };
+    // コンポーネントがアンマウントされる際にリスナーをクリーンアップします。
+    return () => unsubscribe();
   }, []);
 
   const signInWithGoogle = async () => {
+    setLoading(true); // リダイレクトが開始される前にローディング状態にする
     const provider = new GoogleAuthProvider();
-    // We don't need to set loading to true here because the page will reload.
-    // The initial loading state will cover it.
     try {
       await signInWithRedirect(auth, provider);
+      // signInWithRedirectはページを離れるため、この後のコードは実行されません。
+      // 認証結果のハンドリングはonAuthStateChangedリスナーに任せます。
     } catch (error) {
       console.error("Error signing in with Google: ", error);
-      setLoading(false); // Set loading to false if sign-in fails.
+      setLoading(false); // エラーが発生した場合はローディングを解除
     }
   };
 
@@ -73,17 +53,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       await signOut(auth);
-      setUser(null);
+      // ログアウトが成功すると、onAuthStateChangedリスナーが再度発火し、
+      // userがnullに設定され、UIが更新されます。
     } catch (error) {
       console.error("Error signing out: ", error);
     } finally {
-      setLoading(false);
+      // onAuthStateChangedが呼ばれるので、ここでsetLoading(false)は不要です。
     }
   };
 
   const value = { user, loading, signInWithGoogle, signOut: logOut };
 
-  // Render children only when not loading to prevent flashing of logged-out content
+  // 最初の認証状態の確認が終わるまで、子コンポーネントを描画しない
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 }
 
