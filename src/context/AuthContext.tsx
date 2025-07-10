@@ -25,33 +25,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
+    const processRedirectResult = async () => {
+        try {
+            const result = await getRedirectResult(auth);
+            if (result) {
+                // User is available in result.user
+                // onAuthStateChanged will handle setting the user state.
+            }
+        } catch (error) {
+            console.error("Error getting redirect result: ", error);
+        } finally {
+            // After processing the redirect, set up the auth state listener.
+            // This ensures we don't have race conditions between getRedirectResult and onAuthStateChanged.
+            const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+                setUser(currentUser);
+                setLoading(false);
+            });
+            return unsubscribe;
+        }
+    };
 
-    // Handle the redirect result when the component mounts
-    getRedirectResult(auth)
-      .catch((error) => {
-        console.error("Error getting redirect result: ", error);
-      })
-      .finally(() => {
-        // This is to handle the initial loading state after a potential redirect.
-        // onAuthStateChanged will handle setting the user.
+    const unsubscribePromise = processRedirectResult();
+
+    // Make sure to unsubscribe when the component unmounts.
+    return () => {
+      unsubscribePromise.then(unsubscribe => {
+        if (unsubscribe) {
+          unsubscribe();
+        }
       });
-
-
-    return () => unsubscribe();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    setLoading(true);
+    // We don't need to set loading to true here because the page will reload.
+    // The initial loading state will cover it.
     try {
       await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Error signing in with Google: ", error);
-      setLoading(false);
+      setLoading(false); // Set loading to false if sign-in fails.
     }
   };
 
@@ -69,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = { user, loading, signInWithGoogle, signOut: logOut };
 
+  // Render children only when not loading to prevent flashing of logged-out content
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 }
 
