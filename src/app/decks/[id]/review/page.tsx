@@ -1,0 +1,116 @@
+"use client";
+
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { useLocalStorage } from '@/hooks/use-local-storage';
+import type { Deck, Flashcard as FlashcardType } from '@/lib/types';
+import { Flashcard } from '@/components/Flashcard';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { ArrowLeft, ArrowRight, RotateCw, CheckCircle, XCircle } from 'lucide-react';
+import Link from 'next/link';
+
+export default function ReviewPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { id } = params;
+  const [decks] = useLocalStorage<Deck[]>('flashcard-decks', []);
+
+  const deck = useMemo(() => decks.find((d) => d.id === id), [decks, id]);
+
+  const [shuffledCards, setShuffledCards] = useState<FlashcardType[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const shuffleCards = () => {
+    if (deck) {
+      const shuffled = [...deck.cards].sort(() => Math.random() - 0.5);
+      setShuffledCards(shuffled);
+      setCurrentIndex(0);
+    }
+  };
+
+  useEffect(() => {
+    shuffleCards();
+  }, [deck]);
+
+  if (!isMounted) {
+    return null; // or a loading spinner
+  }
+  
+  if (!deck) {
+    return (
+      <div className="text-center">
+        <h1 className="text-2xl font-bold">Deck not found</h1>
+        <Button asChild variant="link" className="mt-4">
+            <Link href="/">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to decks
+            </Link>
+        </Button>
+      </div>
+    );
+  }
+  
+  if (shuffledCards.length === 0) {
+    return (
+      <div className="text-center">
+        <h1 className="text-2xl font-bold">This deck is empty</h1>
+        <p className="text-muted-foreground">Add some cards to start a review session.</p>
+        <Button asChild variant="link" className="mt-4">
+            <Link href={`/decks/${id}`}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to deck
+            </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const progress = ((currentIndex + 1) / shuffledCards.length) * 100;
+  const currentCard = shuffledCards[currentIndex];
+
+  const goToNext = () => {
+    if (currentIndex < shuffledCards.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const goToPrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-8 h-full">
+        <div className="w-full max-w-2xl space-y-2">
+            <Link href={`/decks/${id}`} className="text-sm text-muted-foreground hover:text-primary flex items-center">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to {deck.name}
+            </Link>
+            <div className="flex justify-between items-center">
+                <p className="text-sm font-medium tabular-nums">{currentIndex + 1} / {shuffledCards.length}</p>
+                 <Button variant="ghost" size="sm" onClick={shuffleCards}>
+                    <RotateCw className="mr-2 h-4 w-4" /> Reshuffle
+                </Button>
+            </div>
+            <Progress value={progress} />
+        </div>
+        
+        <div className="w-full max-w-2xl flex-grow flex items-center justify-center">
+          {currentCard && <Flashcard card={currentCard} />}
+        </div>
+        
+        <div className="flex items-center justify-center gap-4 w-full max-w-2xl">
+            <Button size="lg" variant="outline" onClick={goToPrev} disabled={currentIndex === 0}>
+                <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <Button size="lg" onClick={goToNext} disabled={currentIndex >= shuffledCards.length - 1} className="flex-grow bg-accent hover:bg-accent/90 text-accent-foreground">
+                Next Card <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+        </div>
+    </div>
+  );
+}

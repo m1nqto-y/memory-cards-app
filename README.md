@@ -1,5 +1,5 @@
-# Firebase Studio
+# MemoryMaster Flashcards
 
-This is a NextJS starter in Firebase Studio.
+This is a Next.js flashcard application created with Firebase Studio.
 
-To get started, take a look at src/app/page.tsx.
+This application allows users to create decks of flashcards, add terms and definitions, and review them in an interactive, flippable format. All data is stored locally in your browser.
