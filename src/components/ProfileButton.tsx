@@ -17,7 +17,7 @@ export function ProfileButton() {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
 
   if (loading) {
-    return <Loader2 className="h-6 w-6 animate-spin" />;
+    return <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />;
   }
 
   if (!user) {
@@ -36,7 +36,7 @@ export function ProfileButton() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={user.photoURL || undefined} alt={user.displayName || "User"} />
+            {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || "User"} />}
             <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
         </Button>

@@ -30,21 +30,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // Handle the redirect result
+    // Handle the redirect result when the component mounts
     getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          // This gives you a Google Access Token. You can use it to access the Google API.
-          // const credential = GoogleAuthProvider.credentialFromResult(result);
-          // const token = credential?.accessToken;
-          // const user = result.user;
-        }
-      })
       .catch((error) => {
         console.error("Error getting redirect result: ", error);
       })
       .finally(() => {
-        setLoading(false);
+        // This is to handle the initial loading state after a potential redirect.
+        // onAuthStateChanged will handle setting the user.
       });
 
 
@@ -62,17 +55,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signOut = async () => {
+  const logOut = async () => {
+    setLoading(true);
     try {
-      await auth.signOut();
+      await signOut(auth);
+      setUser(null);
     } catch (error) {
       console.error("Error signing out: ", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const value = { user, loading, signInWithGoogle, signOut };
+  const value = { user, loading, signInWithGoogle, signOut: logOut };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
